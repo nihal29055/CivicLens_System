@@ -1,0 +1,27 @@
+# Security (CRITICAL)
+.env
+.env.local
+
+# Virtual Environment (Too big)
+.venv/
+env/
+venv/
+ENV/
+
+# Python Cache (Junk)
+__pycache__/
+*.py[cod]
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Dynamic Data (Don't upload temporary triggers)
+data/trigger.json
+data/incoming_telegram.jpg
+data/tele_*.jpg
+data/whatsapp_*.jpg
+
+# Editor Config
+.vscode/
+.idea/
