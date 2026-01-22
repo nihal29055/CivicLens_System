@@ -1,67 +1,78 @@
-🛡️ CivicLens: Autonomous Governance Defense System
+# CivicLens: Autonomous Governance Defense System
 
-"Palantir for Potholes" — An AI-powered audit system that detects infrastructure fraud using Vector Search and enforces repairs via Autonomous Voice Agents.
+> **"Palantir for Potholes"** — An AI-powered civic audit system that detects infrastructure fraud using Vector Search and enforces accountability via Autonomous Voice Agents.
 
-The Problem
+CivicLens acts as an **unbribable digital bureaucrat** — analyzing evidence, detecting fraud, and autonomously escalating action.
 
-Governments lose billions to "Ghost Repairs"—contractors claiming bills for work they never did. Manual auditing is impossible at scale.
+---
 
-The Solution
+## The Problem
 
-CivicLens is a Defense Core that acts as an unbribable bureaucrat.
+Governments lose **billions annually** to *Ghost Repairs* — contractors claiming payments for work that was never completed.  
+Manual inspection and auditing **does not scale**.
 
-Ingest: Receives images via Telegram/WhatsApp from citizens.
+---
 
-Analyze: Uses Gemini 1.5 to detect severity and material quality.
+## The Solution
 
-Audit: Uses Qdrant Vector Search to detect recycled evidence (fraud).
+CivicLens is an **AI-powered Governance Defense Core**:
 
-Enforce: Physically calls the contractor via Twilio (IVR) to demand action.
+| Module | Function |
+|------|---------|
+| Ingest | Citizens submit photos via Telegram / WhatsApp |
+| Analyze | Gemini 1.5 evaluates damage severity & material quality |
+| Audit | Qdrant Vector Search detects duplicate or recycled evidence |
+| Enforce | Twilio IVR autonomously calls contractors for escalation |
 
-Architecture
+---
 
+## System Architecture
+
+```mermaid
 graph TD
     User[Citizen via Telegram] -->|Photo| Server[FastAPI Server]
     Server -->|Vectorize| Vision[Gemini 1.5 Flash]
     Vision -->|768-dim Vector| Memory[Qdrant DB]
-    
+
     Memory -->|Check Fraud| Logic{Is Duplicate?}
     Logic -- Yes --> Fraud[Block Payment & Alert]
     Logic -- No --> Severity{Is Critical?}
-    
+
     Severity -- Yes --> Call[Twilio Voice Agent]
     Call -->|Dial| Contractor[Contractor Phone]
 
+```
+---
 
-Setup Instructions (End-to-End)
+## Tech Stack
+1. **Backend**: FastAPI
+2. **AI Vision**: Google Gemini 1.5 Flash
+3. **Vector DB**: Qdrant
+4. **Voice Agent**: Twilio Programmable Voice (IVR)
+5. **Messaging**: Telegram Bot API
+6. **Tunneling**: Ngrok
+7. **Language**: Python 3.9+
 
-1. Prerequisites
+---
+## Setup Instructions (End-to-End)
+~ Prerequisites  
+    1.**Python 3.9+** 
+    2.**Ngrok (for Twilio → local tunnel)**
+    3.**Twilio Account (SID, Token, Number)**
+    4.**Google Gemini API Key**
+    5.**Telegram Bot Token (@BotFather)**
 
-Python 3.9+
-
-Ngrok (For local tunneling to Twilio)
-
-Twilio Account (SID, Auth Token, Phone Number)
-
-Google Gemini API Key (Free Tier is fine)
-
-Telegram Bot Token (From @BotFather)
-
-2. Installation
-
-Clone the repository and install dependencies:
-
-git clone [https://github.com/YOUR_USERNAME/CivicLens.git](https://github.com/YOUR_USERNAME/CivicLens.git)
+---
+## Installation
+```
+git clone https://github.com/YOUR_USERNAME/CivicLens.git
 cd CivicLens
 pip install -r requirements.txt
-
-
-3. Configuration
-
-Create a .env file in the root directory. Copy the structure below and fill in your keys:
-
-# .env file
-
+```
+---
+## Configuration
+Create a ```.env ``` file in the root directory:
+```
 # AI Core
 GOOGLE_API_KEY=your_gemini_api_key_here
 
@@ -69,86 +80,87 @@ GOOGLE_API_KEY=your_gemini_api_key_here
 TWILIO_ACCOUNT_SID=your_twilio_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_FROM_NUMBER=+1234567890
-TARGET_PHONE_NUMBER=+919876543210  <-- Your phone number (to receive the demo call)
+TARGET_PHONE_NUMBER=+919876543210
 
 # Telegram Bot
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 
-# Network Tunnel (See Step 4)
-NGROK_URL=[https://your-url.ngrok-free.app](https://your-url.ngrok-free.app)
-
-
-How to Run the Demo
-
+# Network Tunnel (Updated via Ngrok)
+NGROK_URL=https://your-url.ngrok-free.app
+```
+> Do not add trailing ``` /``` in NGROK_URL
+---
+## Running the Demo
 Step 1: Start Ngrok
-
-We need Ngrok so Twilio can talk to your local laptop for the phone call logic.
-
-Open a terminal.
-
-Run: ngrok http 8000
-
-Copy the Forwarding URL (e.g., https://a1b2c3d4.ngrok-free.app).
-
-Paste this URL into your .env file as NGROK_URL.
-
-Note: Ensure no trailing slash / at the end.
-
-Step 2: Start the Backend Server
-
-This handles the Phone Call IVR logic and Telegram inputs.
-
-Open a new terminal.
-
-Run:
-
+```
+ngrok http 8000
+```
+Copy the forwarding URL:
+```
+https://abcd1234.ngrok-free.app
+```
+Update it inside ```.env``` :
+```
+NGROK_URL=https://abcd1234.ngrok-free.app
+```
+---
+Step 2: Start FastAPI Backend
+```
 uvicorn server:app --reload --port 8000
+```
+Handles:
 
+1.Twilio IVR callbacks
 
-Step 3: Start the Defense Core (CLI)
-
-This is the visual dashboard for the judges.
-
-Open a third terminal.
-
-Run:
-
+2.Telegram processing endpoints
+---
+Step 3: Start Defense Core CLI
+```
 python main.py
+```
+This starts the live monitoring engine.
+
+---
+## Demo Flow
+
+1.CLI shows:
+> Waiting for Telegram Image...
+
+2.User sends pothole photo to Telegram bot
+
+3.System pipeline executes:
+    Gemini evaluates severity
+    Qdrant checks duplicate fraud
+    If critical → triggers Twilio call
+    
+4.You receive a phone call:
+```
+Press 1 for English, 2 for Hindi
+```
+5.IVR responds in real time.
+
+---
 
 
-The Demo Flow (Script)
+## Use Cases
 
-Status: The CLI will show "Waiting for Telegram Image...".
+* Smart Cities automated audits
+* Anti-corruption public infrastructure monitoring
+* Civic accountability systems
+* Government contractor verification
+* ESG compliance automation
 
-Action: Open your Telegram Bot and send a photo of a pothole.
+---
 
-Reaction:
+## License
 
-The CLI detects the packet instantly.
+**MIT License**
 
-Gemini analyzes the image (Severity: Critical).
+>Built for
+Convolve 4.0 | Qdrant – MAS Track – Round 2 (2026)
 
-Qdrant indexes the vector.
 
-The System calls your phone.
+---
 
-Interaction: Answer the call. You will hear an IVR Menu:
-
-"Press 1 for English, 2 for Hindi."
-
-Press a button to verify the system responds in real-time.
-
-Troubleshooting
-
-Q: The call failed immediately.
-A: Check your NGROK_URL in .env. It changes every time you restart Ngrok. It must match the running Ngrok session exactly and end in .app or .dev.
-
-Q: "404 Model Not Found" error.
-A: The code automatically falls back to compatible models, but ensure your Google API Key has access to gemini-1.5-flash or gemini-pro.
-
-Q: Telegram bot isn't responding.
-A: The system uses Polling mode in main.py. Ensure main.py is running. If you get a "Conflict" error, it means a Webhook is still active. The script tries to remove it automatically, but you can force it by visiting https://api.telegram.org/botYOUR_TOKEN/deleteWebhook.
-
-📜 License
-
-MIT License. Built for the Convolve 4.0 | Qdrant - MAS Track - Round 2 2026.
+## Author
+--- *Nihal Yadav*
