@@ -9,3 +9,6 @@ pillow
 numpy
 requests
 pydantic
+aiofiles
+pyTelegramBotAPI
+python-multipart

@@ -8,6 +8,7 @@ env/
 venv/
 ENV/
 
+
 # Python Cache (Junk)
 __pycache__/
 *.py[cod]
@@ -25,3 +26,8 @@ data/whatsapp_*.jpg
 # Editor Config
 .vscode/
 .idea/
+
+.env
+data/
+venv/
+__pycache__/

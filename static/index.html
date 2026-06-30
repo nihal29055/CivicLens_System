@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicLens — Governance Defense Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="glow-bg"></div>
+<div class="app-container">
+
+    <!-- ── Header ── -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="logo-shield"></div>
+            <div>
+                <h1>CIVIC<span>LENS</span></h1>
+                <p class="tagline">Autonomous Governance Defense System</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-danger" id="btn-clear-db" onclick="clearDatabase()">🗑️ Clear DB</button>
+            <div class="system-status">
+                <span class="status-indicator online"></span>
+                <span class="status-text">CORE ONLINE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Stats ── -->
+    <section class="metrics-grid">
+        <div class="metric-card glass">
+            <div class="metric-header"><span class="metric-title">Total Audits</span><span class="metric-icon">🔍</span></div>
+            <div class="metric-value" id="stat-total">0</div>
+            <div class="metric-sub">Submissions received</div>
+        </div>
+        <div class="metric-card glass verified">
+            <div class="metric-header"><span class="metric-title">Verified</span><span class="metric-icon">✓</span></div>
+            <div class="metric-value" id="stat-verified">0</div>
+            <div class="metric-sub">Unique evidence confirmed</div>
+        </div>
+        <div class="metric-card glass fraud">
+            <div class="metric-header"><span class="metric-title">Fraud Blocked</span><span class="metric-icon">❌</span></div>
+            <div class="metric-value" id="stat-duplicates">0</div>
+            <div class="metric-sub">Duplicate reports rejected</div>
+        </div>
+        <div class="metric-card glass active-calls">
+            <div class="metric-header"><span class="metric-title">Escalations</span><span class="metric-icon">📞</span></div>
+            <div class="metric-value" id="stat-calls">0</div>
+            <div class="metric-sub">IVR calls dispatched</div>
+        </div>
+    </section>
+
+    <!-- ── Workspace ── -->
+    <div class="workspace-grid">
+
+        <!-- Simulator -->
+        <section class="glass workspace-card">
+            <div class="card-header">
+                <h2>Pipeline Simulator</h2>
+                <span class="badge badge-teal">DEMO</span>
+            </div>
+            <p class="card-desc">Upload an image to run the full pipeline: Gemini AI → Qdrant duplicate check → Twilio IVR call.</p>
+
+            <form id="simulator-form" class="sim-form">
+                <div class="form-group">
+                    <label>Image Source</label>
+                    <select id="image-select" class="form-control">
+                        <option value="test_pothole.jpg">🛣️ Use Test Image (Pothole)</option>
+                        <option value="upload">📁 Upload your own image</option>
+                    </select>
+                </div>
+
+                <div id="file-upload-wrapper" class="form-group hidden">
+                    <label>Upload Image</label>
+                    <div class="file-drop-zone" id="drop-zone">
+                        <span class="upload-icon">📁</span>
+                        <span class="drop-text">Drag & drop or click to browse</span>
+                        <input type="file" id="custom-file" accept="image/*" class="hidden-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="sim-location" value="Sector 4, West Ring Road" class="form-control" placeholder="e.g. MG Road near HDFC bank">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btn-submit">
+                    <span class="btn-text">LAUNCH AUDIT</span>
+                    <span class="loader hidden"></span>
+                </button>
+            </form>
+
+            <!-- Pipeline Steps -->
+            <div class="pipeline-visualizer hidden" id="pipeline-visuals">
+                <h3>Live Execution</h3>
+                <div class="pipeline-steps">
+                    <div class="step" id="step-ingest"><div class="step-bullet">1</div><div class="step-label">Evidence Ingestion</div><span class="step-status">Pending</span></div>
+                    <div class="step" id="step-gemini"><div class="step-bullet">2</div><div class="step-label">Gemini 1.5 Flash Analysis</div><span class="step-status">Pending</span></div>
+                    <div class="step" id="step-qdrant"><div class="step-bullet">3</div><div class="step-label">Qdrant Duplicate Check</div><span class="step-status">Pending</span></div>
+                    <div class="step" id="step-verification"><div class="step-bullet">4</div><div class="step-label">Verdict & Archival</div><span class="step-status">Pending</span></div>
+                    <div class="step" id="step-twilio"><div class="step-bullet">5</div><div class="step-label">Contractor IVR Escalation</div><span class="step-status">Pending</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Console -->
+        <section class="glass workspace-card terminal-card">
+            <div class="card-header">
+                <h2>Live Console</h2>
+                <button class="btn-clear-logs" id="clear-logs">Clear</button>
+            </div>
+            <div class="terminal-body" id="log-console">
+                <div class="log-line system">[SYSTEM] Ready...</div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ── Audit Ledger ── -->
+    <section class="glass workspace-card table-card">
+        <div class="card-header">
+            <h2>Audit Ledger</h2>
+            <div class="header-actions">
+                <span class="qdrant-badge">Qdrant: <span id="qdrant-count">0</span> vectors</span>
+                <button class="btn btn-secondary" id="btn-refresh">Refresh</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Time &amp; Source</th>
+                        <th>Issue &amp; Location</th>
+                        <th>Status</th>
+                        <th>Contractor Response</th>
+                        <th>Rewards</th>
+                        <th>Acnowledgement Status</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-tbody">
+                    <tr><td colspan="7" class="table-loading">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<!-- Modal -->
+<div id="audit-modal" class="modal hidden">
+    <div class="modal-content glass">
+        <span class="close-btn">&times;</span>
+        <div class="modal-body"></div>
+    </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

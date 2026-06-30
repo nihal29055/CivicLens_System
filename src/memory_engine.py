@@ -5,15 +5,43 @@ import os
 
 class MemoryEngine:
     def __init__(self):
-        # PRIORITY: Use In-Memory for Hackathon stability
-        # If you really want cloud, uncomment the next lines, but :memory: is safer.
-        self.client = QdrantClient(":memory:") 
         self.collection = "civic_defense_grid"
+        qdrant_url = os.getenv("QDRANT_URL")
+        qdrant_key = os.getenv("QDRANT_API_KEY")
         
-        self.client.recreate_collection(
-            collection_name=self.collection,
-            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
-        )
+        if qdrant_url:
+            print(f">> MEMORY ENGINE: Connecting to Cloud Qdrant at {qdrant_url}")
+            self.client = QdrantClient(url=qdrant_url, api_key=qdrant_key)
+        else:
+            # Use persistent local storage
+            db_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "qdrant_db"))
+            try:
+                print(f">> MEMORY ENGINE: Initializing local persistent Qdrant at {db_path}")
+                self.client = QdrantClient(path=db_path)
+            except Exception as e:
+                print(f">> WARNING: Local persistent Qdrant failed ({e}). Falling back to in-memory.")
+                self.client = QdrantClient(":memory:")
+        
+        # Check if collection exists before creating it
+        exists = False
+        try:
+            # Try collection_exists (v1.8+)
+            exists = self.client.collection_exists(self.collection)
+        except AttributeError:
+            try:
+                self.client.get_collection(self.collection)
+                exists = True
+            except Exception:
+                exists = False
+        
+        if not exists:
+            print(f">> MEMORY ENGINE: Creating collection '{self.collection}'")
+            self.client.create_collection(
+                collection_name=self.collection,
+                vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+            )
+        else:
+            print(f">> MEMORY ENGINE: Loaded existing collection '{self.collection}'")
 
     def search_duplicate(self, vector):
         try:
@@ -22,7 +50,7 @@ class MemoryEngine:
                 collection_name=self.collection,
                 query_vector=vector,
                 limit=1,
-                score_threshold=0.98
+                score_threshold=0.90 # Adjust threshold for visual description similarity
             )
             
             if hits:
@@ -53,4 +81,27 @@ class MemoryEngine:
             print(f"!! SAVE ERROR: {e}")
 
     def get_stats(self):
-        return self.client.get_collection(self.collection)
+        try:
+            collection_info = self.client.get_collection(self.collection)
+            return {
+                "points_count": getattr(collection_info, "points_count", 0),
+                "vectors_count": getattr(collection_info, "vectors_count", 0),
+                "status": getattr(collection_info, "status", "unknown")
+            }
+        except Exception as e:
+            print(f"!! STATS ERROR: {e}")
+            return {"points_count": 0, "status": "error"}
+
+    def reset_collection(self):
+        """Deletes and recreates the Qdrant collection (wipes all vectors)."""
+        try:
+            self.client.delete_collection(self.collection)
+            self.client.create_collection(
+                collection_name=self.collection,
+                vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+            )
+            print(">> MEMORY ENGINE: Collection reset successfully.")
+            return True
+        except Exception as e:
+            print(f"!! RESET ERROR: {e}")
+            return False
