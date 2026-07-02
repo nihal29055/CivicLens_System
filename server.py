@@ -13,7 +13,7 @@ import requests
 from datetime import datetime
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Initialize engines
 vision = VisionEngine()
@@ -42,6 +42,7 @@ log_event("CivicLens Server starting up...")
 
 # Telegram Bot setup
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+NGROK_URL = os.getenv("NGROK_URL", "").strip()
 bot = None
 if TELEGRAM_BOT_TOKEN:
     try:
@@ -51,6 +52,38 @@ if TELEGRAM_BOT_TOKEN:
         log_event(f"Telegram Bot init FAILED: {e}", "ERROR")
 else:
     log_event("No TELEGRAM_BOT_TOKEN found in .env", "WARNING")
+
+
+@app.on_event("startup")
+async def register_telegram_webhook():
+    """Auto-register the Telegram webhook on server startup."""
+    # Re-read env directly in case module-level vars are stale after reload
+    from dotenv import load_dotenv as _load
+    _load(override=True)
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    ngrok = os.getenv("NGROK_URL", "").strip()
+    log_event(f"[TELEGRAM] Startup: token length={len(token)}, ngrok={ngrok}")
+
+    if not token:
+        log_event("[TELEGRAM] Skipping webhook registration — no token.", "WARNING")
+        return
+    if not ngrok:
+        log_event("[TELEGRAM] Skipping webhook registration — NGROK_URL not set in .env.", "WARNING")
+        return
+    webhook_url = f"{ngrok}/telegram-webhook"
+    try:
+        resp = requests.post(
+            f"https://api.telegram.org/bot{token}/setWebhook",
+            json={"url": webhook_url, "allowed_updates": ["message"]},
+            timeout=10
+        )
+        result = resp.json()
+        if result.get("ok"):
+            log_event(f"[TELEGRAM] Webhook registered: {webhook_url}")
+        else:
+            log_event(f"[TELEGRAM] Webhook registration failed: {result}", "ERROR")
+    except Exception as e:
+        log_event(f"[TELEGRAM] Webhook registration error: {e}", "ERROR")
 
 LATEST_ISSUE = {"type": "Pothole", "loc": "Sector 4", "call_sid": ""}
 
