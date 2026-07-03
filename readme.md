@@ -1,16 +1,14 @@
-# 🛡️ CivicLens: Autonomous Governance Defense System
-### *"Palantir for Potholes"* — Submission Guide
-**Convolve 4.0 | Qdrant MAS Track – Round 2 (2026)**
+#  CivicLens: Autonomous Audit and Enforcement Kernel
 
 ---
 
-## 🎯 The Problem
+##  The Problem
 
 Governments lose **billions annually** to *Ghost Repairs* — contractors claiming payments for work never done. Citizens report civic issues (potholes, broken streetlights, pipeline leaks) but have no guarantee of action. Manual inspection doesn't scale. There's no system to **detect duplicates, route to the right department, or reward honest reporters**.
 
 ---
 
-## 💡 The Solution
+##  The Solution
 
 **CivicLens** is an AI-powered Autonomous Governance Defense System — a Telegram chatbot + web dashboard that:
 
@@ -63,15 +61,15 @@ Citizen sends photo to Telegram Bot
 
 | Feature | Description |
 |---|---|
-| 🤖 **Telegram Bot** | Anonymous citizen reporting via photo + location |
-| 👁️ **Gemini Vision AI** | Detects 11 civic issue types + severity |
-| 🔍 **Qdrant Duplicate Check** | Vector similarity search blocks recycled evidence |
-| 🏛️ **Department Routing** | Auto-routes to PWD, Electricity Board, Water Dept, etc. |
-| 📞 **Twilio IVR Call** | Autonomous voice call with bilingual menu (English/Hindi) |
-| 🎁 **Voucher Rewards** | Anonymous 8-char token sent to reporter on Telegram |
-| 📍 **GPS Detection** | Reads EXIF data OR Telegram location pin |
-| 🔒 **Privacy First** | Reporter identity NEVER stored in any database |
-| 💻 **Web Dashboard** | Real-time audit ledger, logs console, and simulator |
+| **Telegram Bot** | Anonymous citizen reporting via photo + location |
+| **Gemini Vision AI** | Detects 11 civic issue types + severity |
+| **Qdrant Duplicate Check** | Vector similarity search blocks recycled evidence |
+| **Department Routing** | Auto-routes to PWD, Electricity Board, Water Dept, etc. |
+| **Twilio IVR Call** | Autonomous voice call with bilingual menu (English/Hindi) |
+| **Voucher Rewards** | Anonymous 8-char token sent to reporter on Telegram |
+| **GPS Detection** | Reads EXIF data OR Telegram location pin |
+| **Privacy First** | Reporter identity NEVER stored in any database |
+| **Web Dashboard** | Real-time audit ledger, logs console, and simulator |
 
 ---
 
@@ -92,7 +90,7 @@ Citizen sends photo to Telegram Bot
 
 ---
 
-## 🚀 Setup Guide (End-to-End)
+## Setup Guide (End-to-End)
 
 ### Prerequisites
 
@@ -202,7 +200,7 @@ curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" `
 
 ---
 
-## 🎮 Demo Flow
+##  Demo Flow
 
 ### Demo A — Web Dashboard Simulation (No API Keys Required)
 
@@ -218,7 +216,7 @@ curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" `
 
 1. Click **LAUNCH GOVERNANCE AUDIT** again with the same image
 2. Qdrant detects `~100% vector similarity`
-3. Report is flagged as **❌ Fraud Blocked**
+3. Report is flagged as ** Fraud Blocked**
 4. No Twilio call is made, no voucher is issued
 5. Dashboard shows red **Fraud Blocked (100%)** badge
 
@@ -233,7 +231,7 @@ curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" `
 
 ---
 
-## 🔒 Privacy Architecture
+##  Privacy Architecture
 
 The CivicLens system is designed with privacy-first principles:
 
@@ -245,7 +243,7 @@ The CivicLens system is designed with privacy-first principles:
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 CivicLens_System/
@@ -278,22 +276,22 @@ CivicLens_System/
 
 ---
 
-## 🏛️ Department Routing Reference
+##  Department Routing Reference
 
 | Issue Type | Department |
 |---|---|
-| Pothole / Road Damage | 🛣️ Public Works Department (PWD) |
-| Electricity Outage | ⚡ State Electricity Board |
-| Broken Streetlight | 💡 Municipal Corp — Streetlighting |
-| Pipeline Blockage / Water Leakage | 💧 Municipal Water Department |
-| Drainage Overflow / Sewage | 🚰 Sewage & Drainage Board |
-| Garbage Dumping | 🗑️ Solid Waste Management |
-| Tree Fall / Obstruction | 🌳 Urban Forestry Department |
-| Water Logging / Flooding | 🌊 Storm Water Drainage Board |
+| Pothole / Road Damage |  Public Works Department (PWD) |
+| Electricity Outage |  State Electricity Board |
+| Broken Streetlight |  Municipal Corp — Streetlighting |
+| Pipeline Blockage / Water Leakage |  Municipal Water Department |
+| Drainage Overflow / Sewage |  Sewage & Drainage Board |
+| Garbage Dumping |  Solid Waste Management |
+| Tree Fall / Obstruction |  Urban Forestry Department |
+| Water Logging / Flooding |  Storm Water Drainage Board |
 
 ---
 
-## 🧪 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -309,7 +307,7 @@ CivicLens_System/
 
 ---
 
-## 🏆 Hackathon Track Alignment
+##  Hackathon Track Alignment
 
 **Qdrant MAS (Multi-Agent System) Track:**
 
@@ -323,13 +321,13 @@ CivicLens uses Qdrant as the **fraud-detection memory layer** — the core of th
 
 ---
 
-## 👤 Author
+##  Author
 
 **Nihal Yadav**
 Built for Convolve 4.0 | Qdrant MAS Track — Round 2 (2026)
 
 ---
 
-## 📄 License
+##  License
 
 MIT License
