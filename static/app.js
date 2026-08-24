@@ -1,8 +1,12 @@
 // App State
 let lastLogCount = 0;
 let isPipelineRunning = false;
+let wsEnabled = false;
+let wsConn = null;
+let latestLogs = [];
 
 document.addEventListener("DOMContentLoaded", () => {
+    tryConnectWS();
     fetchStats();
     fetchReports();
     fetchLogs();
@@ -298,8 +302,56 @@ async function fetchReports() {
 }
 
 
+function tryConnectWS() {
+    const protocol = (location.protocol === "https:") ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${location.host}/ws/logs`;
+    try {
+        const socket = new WebSocket(wsUrl);
+        socket.addEventListener("open", () => {
+            addConsoleLine("Connected to realtime log stream.", "system");
+            wsEnabled = true;
+            wsConn = socket;
+        });
+        socket.addEventListener("message", (ev) => {
+            try {
+                const entry = JSON.parse(ev.data);
+                const el = document.getElementById("log-console");
+                el.innerHTML = "";
+                if (Array.isArray(entry)) {
+                    latestLogs = entry;
+                    entry.forEach(log => {
+                        const div = document.createElement("div");
+                        div.className = `log-line ${log.level.toLowerCase()}`;
+                        div.textContent = `[${log.timestamp}] [${log.level}] ${log.message}`;
+                        el.appendChild(div);
+                    });
+                } else {
+                    // individual entry
+                    latestLogs.push(entry);
+                    if (latestLogs.length > 200) latestLogs.shift();
+                    const div = document.createElement("div");
+                    div.className = `log-line ${entry.level.toLowerCase()}`;
+                    div.textContent = `[${entry.timestamp}] [${entry.level}] ${entry.message}`;
+                    el.appendChild(div);
+                }
+                el.scrollTop = el.scrollHeight;
+                lastLogCount = latestLogs.length;
+            } catch (e) { console.error('WS parse error', e); }
+        });
+        socket.addEventListener("close", () => {
+            addConsoleLine("Realtime log stream disconnected — falling back to polling.", "warning");
+            wsEnabled = false;
+            wsConn = null;
+        });
+        socket.addEventListener("error", () => { wsEnabled = false; wsConn = null; });
+    } catch (e) {
+        wsEnabled = false;
+    }
+}
+
 async function fetchLogs() {
     try {
+        if (wsEnabled) return latestLogs;
         const res = await fetch("/api/logs");
         const logs = await res.json();
         if (logs.length !== lastLogCount) {

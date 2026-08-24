@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Response, UploadFile, File, BackgroundTasks
+from fastapi import FastAPI, Request, Form, Response, UploadFile, File, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from src.vision_engine import VisionEngine
@@ -10,6 +10,7 @@ import os
 import shutil
 import uuid
 import requests
+import asyncio
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -27,6 +28,22 @@ os.makedirs("data/uploads", exist_ok=True)
 
 SYSTEM_LOGS = []
 
+CONNECTED_WS = set()
+
+async def _broadcast_log(entry):
+    # Send the entry to all connected WS clients; remove disconnected sockets
+    disconnected = []
+    for ws in list(CONNECTED_WS):
+        try:
+            await ws.send_json(entry)
+        except Exception:
+            disconnected.append(ws)
+    for ws in disconnected:
+        try:
+            CONNECTED_WS.remove(ws)
+        except KeyError:
+            pass
+
 def log_event(message: str, level: str = "INFO"):
     entry = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -37,6 +54,11 @@ def log_event(message: str, level: str = "INFO"):
     if len(SYSTEM_LOGS) > 200:
         SYSTEM_LOGS.pop(0)
     print(f"[{level}] {message}")
+    # Broadcast asynchronously to connected websocket clients (fire-and-forget)
+    try:
+        asyncio.create_task(_broadcast_log(entry))
+    except Exception:
+        pass
 
 log_event("CivicLens Server starting up...")
 
@@ -360,7 +382,8 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
             log_event(f"[TELEGRAM] Text: {text[:60]}")
 
             try:
-                if text in ["/start", "/help"]:
+                command = text.split()[0].lower().split('@', 1)[0] if text else ""
+                if command in ["/start", "/help"]:
                     bot.send_message(chat_id,
                         "👋 *Welcome to CivicLens!*\n\n"
                         "I help report civic issues to authorities anonymously.\n\n"
@@ -451,6 +474,26 @@ async def api_clear_db():
 
 
 # ─── STATIC FILES ─────────────────────────────────────────────────────────────
+@app.websocket("/ws/logs")
+async def websocket_logs(ws: WebSocket):
+    await ws.accept()
+    CONNECTED_WS.add(ws)
+    try:
+        # send backlog on connect
+        for entry in SYSTEM_LOGS:
+            await ws.send_json(entry)
+        while True:
+            # keep connection alive — clients may send pings
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if ws in CONNECTED_WS:
+            try:
+                CONNECTED_WS.remove(ws)
+            except KeyError:
+                pass
+
 app.mount("/data", StaticFiles(directory="data"), name="data")
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -2,6 +2,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 import uuid
 import os
+from urllib.parse import urlparse
 
 class MemoryEngine:
     def __init__(self):
@@ -9,10 +10,18 @@ class MemoryEngine:
         qdrant_url = os.getenv("QDRANT_URL")
         qdrant_key = os.getenv("QDRANT_API_KEY")
         
-        if qdrant_url:
-            print(f">> MEMORY ENGINE: Connecting to Cloud Qdrant at {qdrant_url}")
-            self.client = QdrantClient(url=qdrant_url, api_key=qdrant_key)
-        else:
+        self.client = None
+        if qdrant_url and urlparse(qdrant_url).scheme in {"http", "https"}:
+            try:
+                print(f">> MEMORY ENGINE: Connecting to Cloud Qdrant at {qdrant_url}")
+                self.client = QdrantClient(url=qdrant_url, api_key=qdrant_key)
+                self.client.get_collections()
+            except Exception as e:
+                print(f">> WARNING: Cloud Qdrant unavailable ({e}). Falling back to local storage.")
+
+        if self.client is None:
+            if qdrant_url:
+                print(">> WARNING: QDRANT_URL must include http:// or https://. Using local storage.")
             # Use persistent local storage
             db_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "qdrant_db"))
             try:
@@ -104,4 +113,4 @@ class MemoryEngine:
             return True
         except Exception as e:
             print(f"!! RESET ERROR: {e}")
-            return False
+            return False
